@@ -1,10 +1,158 @@
 <!DOCTYPE html>
 <html>
-<head>
-        <title>Ola's blog</title>
+    <head>
+        <title>Sentiment Analyis</title>
+         {% load static %}
+        <link rel="stylesheet" href="{% static '/css/bootstrap.min.css' %}" >
+        <script src="{% static 'js/bootstrap.min.js' %}"></script>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/holtzy/D3-graph-gallery@master/LIB/d3.layout.cloud.js"></script>
+        <style>
+            .bar {
+                fill: steelblue;
+            }
+        </style>
+        <script>
+            var data= {{tweets|safe}}
+        </script>
     </head>
     <body>
-        <p>Hi there!</p>
-        <p>It works!</p>
+        <div class="container-fluid min-vh-100">
+             <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                  <a class="navbar-brand" href="#">Sentiment Analysis</a>
+                </div>
+             </nav>
+            <div class="row">
+                <div class="col-6" style="overflow:auto">
+                    <ul class="list-group">
+                    {% for tweet in tweets %}
+                        <li class="list-group-item">{{ tweet.text|linebreaksbr }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-6">
+                    <div class="row">
+                        <div class="col-xs-3">
+                            <svg width="600" height="500"></svg>
+
+                                <script>
+
+                                    var svg = d3.select("svg"),
+                                        margin = 200,
+                                        width = svg.attr("width") - margin,
+                                        height = svg.attr("height") - margin
+
+                                    svg.append("text")
+                                       .attr("transform", "translate(100,0)")
+                                       .attr("x", 50)
+                                       .attr("y", 50)
+                                       .attr("font-size", "24px")
+                                       .text("Sentiment Score")
+
+                                    var xScale = d3.scaleBand().range([0, width]).padding(0.4),
+                                        yScale = d3.scaleLinear().range([height, 0]);
+
+                                    var g = svg.append("g")
+                                               .attr("transform", "translate(" + 100 + "," + 100 + ")");
+
+
+
+                                        xScale.domain(data.map(function(d) { return d.sentiment; }));
+                                        yScale.domain([0, d3.max(data, function(d, i) { return i*3; })]);
+
+                                        g.append("g")
+                                         .attr("transform", "translate(0," + height + ")")
+                                         .call(d3.axisBottom(xScale))
+                                         .append("text")
+                                         .attr("y", height - 250)
+                                         .attr("x", width - 100)
+                                         .attr("text-anchor", "end")
+                                         .attr("stroke", "black")
+                                         .text("Sentiment");
+
+                                        g.append("g")
+                                         .call(d3.axisLeft(yScale).tickFormat(function(d){
+                                             return d;
+                                         })
+                                         .ticks(10))
+                                         .append("text")
+                                         .attr("transform", "rotate(-90)")
+                                         .attr("y", 6)
+                                         .attr("dy", "-5.1em")
+                                         .attr("text-anchor", "end")
+                                         .attr("stroke", "black")
+                                         .text("Count");
+
+                                        g.selectAll(".bar")
+                                         .data(data)
+                                         .enter().append("rect")
+                                         .attr("class", "bar")
+                                         .attr("x", function(d) { return xScale(d.sentiment); })
+                                         .attr("y", function(d, i) { return yScale(i); })
+                                         .attr("width", xScale.bandwidth())
+                                         .attr("height", function(d, i) { return height - yScale(i); });
+
+                                </script>
+                        </div>
+                        <div class="col-xs-3">
+                            <h3>Word Cloud</h3>
+                            <div id="my_dataviz"></div>
+                            <script>
+
+                            // List of words
+                            var myWords = []
+                            data.forEach(function(e){
+                                myWords = myWords.concat(e.entity)
+
+                            });
+
+                            // set the dimensions and margins of the graph
+                            var margin = {top: 10, right: 10, bottom: 10, left: 10},
+                                width = 450 - margin.left - margin.right,
+                                height = 450 - margin.top - margin.bottom;
+
+                            // append the svg object to the body of the page
+                            var svg = d3.select("#my_dataviz").append("svg")
+                                .attr("width", width + margin.left + margin.right)
+                                .attr("height", height + margin.top + margin.bottom)
+                              .append("g")
+                                .attr("transform",
+                                      "translate(" + margin.left + "," + margin.top + ")");
+                            console.log("**************8")
+                            // Constructs a new cloud layout instance. It run an algorithm to find the position of words that suits your requirements
+                            var layout = d3.layout.cloud()
+                              .size([width, height])
+                              .words(myWords.map(function(d) { return {text: d}; }))
+                              .padding(10)
+                              .fontSize(60)
+                              .on("end", draw);
+                            layout.start();
+
+                            // This function takes the output of 'layout' above and draw the words
+                            // Better not to touch it. To change parameters, play with the 'layout' variable above
+                            function draw(words) {
+                              svg
+                                .append("g")
+                                  .attr("transform", "translate(" + layout.size()[0] / 2 + "," + layout.size()[1] / 2 + ")")
+                                  .selectAll("text")
+                                    .data(words)
+                                  .enter().append("text")
+                                    .style("font-size", function(d) { return d.size + "px"; })
+                                    .attr("text-anchor", "middle")
+                                    .attr("transform", function(d) {
+                                      return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                                    })
+                                    .text(function(d) { return d.text; });
+                            }
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
     </body>
 </html>
