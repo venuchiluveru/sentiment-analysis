@@ -1,6 +1,5 @@
 from django.shortcuts import render
 import tweepy
-import pandas as pd
 import nltk
 from nltk.corpus import stopwords, state_union
 from nltk.sentiment import SentimentIntensityAnalyzer
