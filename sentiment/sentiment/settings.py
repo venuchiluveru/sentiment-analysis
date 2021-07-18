@@ -47,7 +47,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'sentimentapp.apps.SentimentConfig',
+    'sentimentapp.apps.SentimentappConfig',
 ]
 
 ROOT_URLCONF = 'sentiment.urls'
