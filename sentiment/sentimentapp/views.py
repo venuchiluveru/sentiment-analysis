@@ -6,12 +6,17 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 import re
 from nltk import ne_chunk, pos_tag, word_tokenize
 from nltk.tree import Tree
+from django.conf import settings
+from django.http import JsonResponse
 
 # Create your views here.
-ckey = 'CssxtLh8pahqZQafHTQLlUP8t'
-csecret = 'tGbqYWu0IK7wcXMm2jRT3leEDw8wjkQHAX6Xy7NGIaoFDzb73k'
-atoken = '393440349-W5PuLfac3Ns5cjV7meCRsBB146gjTKQy30BTm4dO'
-asecret = 'gjpEqAs3hT6h7sz8wvVLaDhC4RQUkKxu18bllhSKDVmeS'
+ckey = settings.CKEY
+csecret = settings.CSECRET
+atoken = settings.ATOKEN
+asecret = settings.ASECRET
+auth = tweepy.OAuthHandler(ckey, csecret)
+auth.set_access_token(atoken, asecret)
+api = tweepy.API(auth)
 
 def clean_tweet(text):
     text = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", text).split())
@@ -46,7 +51,10 @@ def calulate_sentiment(sentiment_analysis, data):
     val = []
     for value in data:
         tweet_data = {}
-        text = value.full_text
+        if hasattr(value, 'full_text'):
+            text = value.full_text
+        else:
+            text = value.text
         processed_text = clean_tweet(text)
         sentiment_scores = sentiment_analysis.polarity_scores(processed_text)
         tweet_data['text'] = text
@@ -62,15 +70,28 @@ def calulate_sentiment(sentiment_analysis, data):
 
         tweet_data['entity'] = entity_extraction(processed_text)
         val.append(tweet_data)
-    print(val)
+    # print(val)
     return val
 
 
 def tweet_list(request):
-    sentiment_analysis = SentimentIntensityAnalyzer()
-    auth = tweepy.OAuthHandler(ckey, csecret)
-    auth.set_access_token(atoken, asecret)
-    api = tweepy.API(auth)
-    data = api.user_timeline(screen_name='elonmusk', count=100, include_rts=False, tweet_mode='extended')
-    result = calulate_sentiment(sentiment_analysis, data)
+    result = []
+    if request.method == "GET":
+        sentiment_analysis = SentimentIntensityAnalyzer()
+        data = api.user_timeline(screen_name='elonmusk', count=100, include_rts=False, tweet_mode='extended')
+        result = calulate_sentiment(sentiment_analysis, data)
     return render(request, 'sentimentapp/tweet_list.html', {'tweets': result})
+
+def tweet_search(request):
+    search_words = request.GET['search_text']
+    sentiment_analysis = SentimentIntensityAnalyzer()
+    result = []
+    if request.method == "GET":
+        new_search = search_words + " -filter:retweets"
+        tweets = tweepy.Cursor(api.search,
+                           q=new_search,
+                           lang="en").items(100)
+
+        print(tweets)
+        result = calulate_sentiment(sentiment_analysis, tweets)
+    return JsonResponse({'tweets': result})

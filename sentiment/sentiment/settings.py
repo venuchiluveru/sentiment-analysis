@@ -115,6 +115,10 @@ USE_L10N = True
 
 USE_TZ = True
 
+CKEY = 'CssxtLh8pahqZQafHTQLlUP8t'
+CSECRET = 'tGbqYWu0IK7wcXMm2jRT3leEDw8wjkQHAX6Xy7NGIaoFDzb73k'
+ATOKEN = '393440349-W5PuLfac3Ns5cjV7meCRsBB146gjTKQy30BTm4dO'
+ASECRET = 'gjpEqAs3hT6h7sz8wvVLaDhC4RQUkKxu18bllhSKDVmeS'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
