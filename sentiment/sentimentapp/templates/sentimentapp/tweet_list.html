@@ -15,8 +15,6 @@
         </style>
         <script>
             var data= {{tweets|safe}}
-
-
         </script>
         <style>
 .loader {
@@ -60,7 +58,7 @@
 </style>
 
     </head>
-    <body>
+    <body class="initial-hide">
 
         <div class="container-fluid min-vh-100">
             <div id="overlay">
@@ -116,7 +114,6 @@
         <script>
         $('#bsalert').hide();
         $('#overlay').hide();
-
         function loadBarGraph(tweetData){
             var svg = d3.select("svg"),
                 margin = 200,
